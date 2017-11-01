@@ -1,15 +1,19 @@
 import sys
 import re
 
-print ('Hi! This is an information extractor. Please enter your file like:\n')
-cmdLineArgs = raw_input('infoextract input.txt\n')
-cmdLineArgs = cmdLineArgs.split()
+def getIncident(article):
+    listOfIncidentTypes = ["arson", "kidnapping", "robbery",'bombing','attack']
+    for item in listOfIncidentTypes:
+        if item in article.lower():
+            return item
+    return "attack"
 
-# def getId(article):
-#     return id
+#print ('Hi! This is an information extractor. Please enter your file like:\n')
+# cmdLineArgs = raw_input('infoextract input.txt\n')
+# cmdLineArgs = cmdLineArgs.split()
 
 try:
-    with open(cmdLineArgs[1], 'r') as file:
+    with open(sys.argv[1], 'r') as file:
         fileContent = file.read().strip()
 
         #split based on id pattern
@@ -23,7 +27,7 @@ except BaseException as e:
 
 #Create a dictionary of ids and articles
 news_dictionary = {}
-outputFile = open(cmdLineArgs[1] + ".template", "w")
+outputFile = open(sys.argv[1] + ".template", "w")
 
 for article in articles:
     id_pattern = re.compile("(((DEV-MUC3-)|(TST1-MUC3-)|(TST2-MUC4-))[0-9]{4})")
@@ -34,8 +38,11 @@ for article in articles:
     if half_id_pattern.match(article):
       continue
     news_dictionary[id] = article
+    incident = getIncident(article)
+    outputFile.write("ID: \t" + id.upper() + "\n")
+    outputFile.write("INCIDENT: \t" + incident.upper() + "\n")
 
-    outputFile.write("ID: \t" + id + "\n")
+
 outputFile.close()
    # incident = getIncident(article)
    # weapon = getWeapon(article)
