@@ -18,6 +18,9 @@ from sklearn import svm
 import numpy as np
 from nltk.tag import StanfordNERTagger
 from nltk.tokenize import word_tokenize
+from nltk.tag.stanford import CoreNLPNERTagger
+from nltk.tag.stanford import CoreNLPPOSTagger
+
 incidentTags={'ARSON':0,'ATTACK':1,'BOMBING':2,'KIDNAPPING':3,'ROBBERY':4}
 
 # Change the path according to your system
@@ -145,17 +148,18 @@ def getWeapon(article):
                     "TERRORIST, MINE, INCENDIARY, ROCKET, HOMEMADE BOMB, HOME-MADE BOMB,STONES, BUSBOMB, " \
                     "BUSBOMBS, BUS-BOMB, STONE, BUS BOMB, INCENDIARY BOMB, MINES, EXPLOSIVE DEVICE, " \
                     "DYNAMITE CHARGE, TRUCK-BOMB, PROJECTILE, TNT, RDX, TRUCK BOMB, FIRE, PLASTIC BOMB, PLASTIC-BOMB,TNT, GUNPOWDER, GUN-POWDER"
+
     '''
-    listOfWeapons = listOfWeapons.split(',')
-    article = nltk.pos_tag(word_tokenize(article))
+    #article = nltk.pos_tag(word_tokenize(article))
+    article = CoreNLPPOSTagger(url='http://localhost:9000').tag(word_tokenize(article))
     article = [w for w in article if not w in stopwords.words('english')]
     weaponsContained = []
     for i,taggedWord in enumerate(article):
         if taggedWord[1].startswith('N'):
             try:
                 word = taggedWord[0]
-                for weapon in listOfWeapons:
-                    if weapon in word:
+                for weapon in listOfWeapons.split(','):
+                    if weapon.strip() in word:
                         #now, to get the full weapon, we need all the nouns immediately preceeding it and the adjectives preceeding the noun and the nouns suceeding the word
                         adjNouns = []
                         j=i-1
@@ -167,6 +171,9 @@ def getWeapon(article):
                             j -= 1
                         #numbers as well like 4 huge guns
                         while article[j][1] == 'CD':
+                            adjNouns.append(article[j][0])
+                            j -= 1
+                        while article[j][1] == 'DT':
                             adjNouns.append(article[j][0])
                             j -= 1
                         adjNouns =  " ".join(reversed(adjNouns)).split()
@@ -189,16 +196,24 @@ def getWeapon(article):
         for weapon in listOfWeapons.split(','):
             if weapon in word:
                 if word not in weaponsContained:
-                    weaponsContained.append(word)
+                    weaponsContained.append(weapon)
 
 
     return weaponsContained
 
+def getOrganization(article):
+    organizations = ['MORAZANIST PATRIOTIC FRONT', ' CEA', 'FORCES OF THE CRISTIANI ADMINISTRATION', '[DIGNITY] BATTALIONS', 'SALVADORAN POLICE', '1ST INFANTRY BRIGADE', ' WORK', 'TUPAC AMARU REVOLUTIONARY MOVEMENT', 'ELN', 'DRUG MAFIA', ' AND FREEDOM MOVEMENT', 'MEDELLIN CARTEL', 'PCCH', 'NATIONAL LIBERATION ARMY', 'SALVADORAN ARMY', 'BASQUE FATHERLAND AND LIBERTY [ETA] SEPARATIST ORGANIZATION', 'SENDERO LUMINOSO', 'THE COLOMBIAN INTELLIGENCE SERVICES', 'CUERPO ESPECIAL ARMADO', 'FMLN', 'MILITARY OFFICERS', 'FPMR', 'MRTA', 'GENERAL STAFF', 'MAOIST POPULAR LIBERATION ARMY', 'ARMED FORCES DEATH SQUADS', 'FARABUNDO MARTI NATIONAL LIBERATION FRONT (FMLN)', 'EXTRADITABLES', 'AIR FORCE', 'CEA', 'NATIONAL POLICE', 'COMMUNIST PARTY OF CHILE', 'DRUG TRAFFICKING ORGANIZATION', 'DEATH SQUAD', 'BREAD', 'THE MILITARY FASCIST DICTATORSHIP', 'SALVADORAN GUERRILLAS', 'ATLACATL BATTALION', 'UMOPAR', 'ASSASSINATION GROUP', '19-APRIL MOVEMENT', 'THE OWLS', 'SALVADORAN ARMED FORCES', "THE MEDELLIN CARTEL'S ARMED WING", 'MILITARY', 'SALVADORAN GOVERNMENT', 'RIGHTWING', 'OWLS', 'SALVADORAN TOP MILITARY COMMAND', 'CRISTIANI GOVERNMENT', 'SALVADORAN ARMY MILITARY SCHOOL','MEDELLIN', 'THE ELITE FORCE', 'EIGHT MILITARY OFFICERS', 'COMMUNIST PARTY', 'SALVADORAN AIR FORCE', 'PRO-CASTROITE ARMY OF NATIONAL LIBERATION', 'COLOMBIAN POLICE', 'EXTREME RIGHT-WING ASSASSINATION GROUP', 'THE EXTRADITABLES', 'NATIONAL PARTY', 'DRUG TRAFFICKING GANGS', "PEOPLE'S REVOLUTIONARY ARMY", 'SPECIAL ARMED CORPS', 'THE SALVADORAN AIR FORCE', 'COLOMBIAN GUERRILLA GROUP', "ARMED FORCES' GENERAL STAFF", 'TUPAC AMARY REVOLUTIONARY MOVEMENT', 'SHINING PATH', 'FPM', 'FARABUNDO MARTI NATIONAL LIBERATION FRONT [FMLN]', 'ARMED FORCES', 'THE COLOMBIAN SECURITY SERVICES', 'FMLN ', 'ULTRALEFTIST GROUPS', 'LOS EXTRADITABLES', 'U.S. CIA', 'THE COMMUNIST PARTY OF CHILE', 'FARABUNDO MARTI NATIONAL LIBERATION FRONT', 'ELN [ARMY OF NATIONAL LIBERATION]', 'MANUEL RODRIGUEZ PATRIOTIC FRONT', '6TH MILITARY DETACHMENT', 'THE MEDELLIN CARTEL', ' LAND', 'SALVADORAN REGIME', "CRISTIANI'S GOVERNMENT", 'FARC 12TH FRONT', 'ARMY OF NATIONAL LIBERATION', 'THE NATIONAL LIBERATION ARMY', 'COCAINE CARTELS', 'SPECIAL ARMED CORPS [CUERPO ESPECIAL ARMADO]', 'GOVERNMENT AND ARMY SECTORS', 'THE GUERRILLA ARMY OF NATIONAL LIBERATION', 'BASQUE FATHERLAND LIBERTY [ETA]', 'THE FMLN [FARABUNDO MARTI NATIONAL LIBERATION MOVEMENT]', 'THE ARMY OF NATIONAL LIBERATION', 'FAR RIGHTWING']
+    containedOrganizations = []
+    for organization in organizations:
+        if organization in article:
+            if organization not in containedOrganizations:
+                containedOrganizations.append(organization)
+    return containedOrganizations
 
 mlClassfier = getClassifier()
 
 
-def getIncidentMachinLearning(mlClassifier,article):
+def getIncidentMachineLearning(mlClassifier,article):
     docs_test=[]
     docs_test.append(article)
     predicted = mlClassifier.predict(docs_test)
@@ -228,18 +243,33 @@ def getVictim(article):
     return listVictims
 
 for id in news_dictionary:
-    incident = getIncidentMachinLearning(mlClassfier,news_dictionary[id])
+    incident = getIncidentMachineLearning(mlClassfier,news_dictionary[id])
     weapon = getWeapon(news_dictionary[id])
+
     listOfVictims = getVictim(news_dictionary[id])
+
+    organization = getOrganization(news_dictionary[id])
+
     outputFile.write("ID:             " + id.upper() + "\n")
     outputFile.write("INCIDENT:       " + incident.upper() + "\n")
     outputFile.write("WEAPON:         " )
+
 
     if len(weapon) == 0:
         outputFile.write('-')
     else:
         for i, item in enumerate(weapon):
             if i != len(weapon) - 1:
+                outputFile.write(item.upper() + '\r                ')
+            else:
+                outputFile.write(item.upper())
+
+    outputFile.write("\rPERP ORG:       ")
+    if len(organization) == 0:
+        outputFile.write('-')
+    else:
+        for i, item in enumerate(organization):
+            if i != len(organization) - 1:
                 outputFile.write(item.upper() + '\r                ')
             else:
                 outputFile.write(item.upper())
@@ -252,8 +282,10 @@ for id in news_dictionary:
             if i != len(listOfVictims) - 1:
                 outputFile.write(item.upper() + '\r                ')
             else:
-                outputFile.write(item.upper())
-    outputFile.write("\n")
+                outputFile.write(item.upper()+"\n")
+
+
+
     outputFile.write("\n")
 
 outputFile.close()
