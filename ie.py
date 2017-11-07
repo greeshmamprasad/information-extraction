@@ -16,9 +16,16 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn import svm
 import numpy as np
+from nltk.tag import StanfordNERTagger
+from nltk.tokenize import word_tokenize
 incidentTags={'ARSON':0,'ATTACK':1,'BOMBING':2,'KIDNAPPING':3,'ROBBERY':4}
 
+# Change the path according to your system
+stanford_classifier = 'C:\Python3.5\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
+stanford_ner_path = 'C:\Python3.5\stanford-ner-2017-06-09\stanford-ner.jar'
 
+# Creating Tagger Object
+st = StanfordNERTagger(stanford_classifier, stanford_ner_path, encoding='utf-8')
 
 print ('Hi! This is an information extractor. Please enter your file like:\n')
 cmdLineArgs = input('infoextract input.txt\n')
@@ -197,18 +204,56 @@ def getIncidentMachinLearning(mlClassifier,article):
     predicted = mlClassifier.predict(docs_test)
     return list(incidentTags.keys())[list(incidentTags.values()).index(predicted)]
 
+def getVictim(article):
+    tokenized_text = word_tokenize(article)
+    ner_text = st.tag(tokenized_text)
+    listVictims = []
+
+    temp = 0
+    lname = []
+    for i, obj in enumerate(ner_text):
+        if (i < temp):
+            continue
+
+        victim = []
+        temp = i
+        while (ner_text[temp][1] == 'PERSON'):
+            victim.append(ner_text[temp][0])
+            temp += 1
+
+        if (victim.__len__() != 0 and victim.__len__()>1):
+            if (" ".join(victim) not in lname):
+                lname.append(" ".join(victim[1:]))
+                listVictims.append(" ".join(victim))
+    return listVictims
+
 for id in news_dictionary:
     incident = getIncidentMachinLearning(mlClassfier,news_dictionary[id])
     weapon = getWeapon(news_dictionary[id])
+    listOfVictims = getVictim(news_dictionary[id])
     outputFile.write("ID:             " + id.upper() + "\n")
     outputFile.write("INCIDENT:       " + incident.upper() + "\n")
     outputFile.write("WEAPON:         " )
 
-    if len(weapon)==0:
-        outputFile.write('- \n')
+    if len(weapon) == 0:
+        outputFile.write('-')
     else:
-        for item in weapon:
-            outputFile.write(item.upper()+'\n                ')
+        for i, item in enumerate(weapon):
+            if i != len(weapon) - 1:
+                outputFile.write(item.upper() + '\r                ')
+            else:
+                outputFile.write(item.upper())
+
+    outputFile.write("\rVICTIM:         ")
+    if len(listOfVictims)==0:
+        outputFile.write('-')
+    else:
+        for i, item in enumerate(listOfVictims):
+            if i != len(listOfVictims) - 1:
+                outputFile.write(item.upper() + '\r                ')
+            else:
+                outputFile.write(item.upper())
+    outputFile.write("\n")
     outputFile.write("\n")
 
 outputFile.close()
