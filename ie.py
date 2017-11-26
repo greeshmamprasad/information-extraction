@@ -1,9 +1,7 @@
-
 '''
 Authors:
 Sheetal Krishna Mohanadas Janaki - U1135144
 Greeshma Mahadeva Prasad - U1141804
-
 '''
 
 import sys
@@ -20,22 +18,28 @@ from nltk.tag import StanfordNERTagger
 from nltk.tokenize import word_tokenize
 from nltk.tag.stanford import CoreNLPNERTagger
 from nltk.tag.stanford import CoreNLPPOSTagger
+import os
 
 incidentTags={'ARSON':0,'ATTACK':1,'BOMBING':2,'KIDNAPPING':3,'ROBBERY':4}
 
 # Change the path according to your system
-stanford_classifier = 'C:\Python3.5\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
-stanford_ner_path = 'C:\Python3.5\stanford-ner-2017-06-09\stanford-ner.jar'
+#stanford_classifier = 'C:\Python3.5\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
+#stanford_ner_path = 'C:\Python3.5\stanford-ner-2017-06-09\stanford-ner.jar'
+
+stanford_classifier = os.environ.get('STANFORD_MODELS').split(':')[0]
+
+# For getting the path for StanfordNERTagger 
+stanford_ner_path = os.environ.get('CLASSPATH').split(':')[0]
 
 # Creating Tagger Object
-st = StanfordNERTagger(stanford_classifier, stanford_ner_path, encoding='utf-8')
 
-print ('Hi! This is an information extractor. Please enter your file like:\n')
-cmdLineArgs = input('infoextract input.txt\n')
-cmdLineArgs = cmdLineArgs.split()
+
+#print ('Hi! This is an information extractor. Please enter your file like:\n')
+#cmdLineArgs = input('infoextract input.txt\n')
+#cmdLineArgs = cmdLineArgs.split()
 
 try:
-    with open(cmdLineArgs[1], 'r') as file:
+    with open(sys.argv[1], 'r') as file:
         fileContent = file.read().strip()
         #split based on id pattern
         articles = list(filter(None, re.split(r"(((DEV-MUC3-)|(TST1-MUC3-)|(TST2-MUC4-))[0-9]{4})", fileContent)))
@@ -48,8 +52,9 @@ except BaseException as e:
 
 #Create a dictionary of ids and articles
 news_dictionary = {}
-outputFile = open(cmdLineArgs[1] + ".template", "w")
+outputFile = open(sys.argv[1]+".templates" , "w")
 
+listOfIds =[]
 for article in articles:
     id_pattern = re.compile("(((DEV-MUC3-)|(TST1-MUC3-)|(TST2-MUC4-))[0-9]{4})")
     if id_pattern.match(article):
@@ -58,6 +63,7 @@ for article in articles:
     half_id_pattern = re.compile("((DEV-MUC3-)|(TST1-MUC3-)|(TST2-MUC4-))")
     if half_id_pattern.match(article):
       continue
+    listOfIds.append(id)
     news_dictionary[id] = article
 
 def getClassifier():
@@ -135,19 +141,19 @@ def getClassifier():
 def getWeapon(article):
     listOfWeapons = "MACHINE-GUN, MACHINE-GUNS, MACHINEGUN,  MACHINEGUNS, GRENADES, GRENADE, " \
                     "HANDGRENADE,HANDGRENADES, HAND-GRENADE, HAND-GRENADES, BULLET , BULLETS, " \
-                    "AK-47S, AK-47, BOMB, BOMBS,MORTAR,MORTARS, ROCKET, ROCKETS, SUB-MACHINE-GUN, " \
-                    "SUB-MACHINE-GUNS, SUB-MACHINEGUN, SUB-MACHINEGUNS, SUBMACHINEGUN, SUBMACHINEGUNS, " \
+                    "AK-47S, AK-47, A BOMB, THE BOMB, BOMB, BOMBS,MORTAR,MORTARS, ROCKET, ROCKETS, SUB-MACHINE-GUN, " \
+                    "SUB-MACHINE-GUNS, SUB-MACHINEGUN, SUB-MACHINEGUNS, SUBMACHINEGUN, SUBMACHINEGUNS,SUBMACHINE-GUN, SUBMACHINE-GUNS " \
                     "AK RIFLES, RIFLE, RIFLES, AK-47 RIFLE, AK-47 RIFLES, STONES, MORTAR, MORTARS, " \
                     "GUN , GUNS, MACHINEGUN MACHINEGUNS, SUBMACHINE GUN, SUBMACHINE GUNS, SUB MACHINE GUN, " \
                     "SUB MACHINE GUNS, HAND GRENADE, HAND-GRENADE, HAND-GRENADES,HAND GRENADES," \
                     "AERIAL BOMB ,ARTILLERY, PISTOLS, PISTOL,HANDGUN, HANDGUNS, HAND GUN, HAND GUNS, " \
                     "HAND-GUN, HAND-GUNS, AIR GUN, AIRGUN, AIR-GUN, AIR GUNS, AIRGUNS, AIR-GUNS, " \
                     "REVOLVER, REVOLVERS, BLOWGUN, BLOWGUNS, ASSAULT RIFLE, ASSAULT-RIFLE, FIREARM, " \
-                    "FIRE-ARM, FIRE ARM, TANK, TANKER,DYNAMITE, DYNAMITES, BOMB, BOMBS, EXPLOSIVE, " \
-                    "CHARGE, ROCKET,ROCKETS, GRENADE, CARBOMB, CAR BOMB, CAR-BOMB, GRENADES, EXPLOSIVES, " \
-                    "TERRORIST, MINE, INCENDIARY, ROCKET, HOMEMADE BOMB, HOME-MADE BOMB,STONES, BUSBOMB, " \
-                    "BUSBOMBS, BUS-BOMB, STONE, BUS BOMB, INCENDIARY BOMB, MINES, EXPLOSIVE DEVICE, " \
-                    "DYNAMITE CHARGE, TRUCK-BOMB, PROJECTILE, TNT, RDX, TRUCK BOMB, FIRE, PLASTIC BOMB, PLASTIC-BOMB,TNT, GUNPOWDER, GUN-POWDER"
+                    "FIRE-ARM, FIRE ARM, TANK, TANKER,DYNAMITE,DYNAMITE-ATTACK, DYNAMITE-ATTACKS,DYNAMITE ATTACK, DYNAMITE ATTACKS, DYNAMITE STICK, DYNAMITE STICKS, DYNAMITE-STICK, DYNAMITE-STICKS, DYNAMITES, BOMB, BOMBS, EXPLOSIVE, " \
+                    " ROCKET,ROCKETS, GRENADE, CARBOMB, CAR BOMB, CAR-BOMB, GRENADES, EXPLOSIVES, " \
+                    "TERRORIST, TERRORIST BOMB, TERRORIST BOMBS, TERRORIST-BOMB,TERRORIST-BOMBS, MINE, ROCKET, HOMEMADE BOMB, HOME-MADE BOMB,STONES, BUSBOMB, VEHICLE LOADED WITH EXPLOSIVES," \
+                    "BUSBOMBS, BUS-BOMB, STONE, BUS BOMB, INCENDIARY BOMB, MINES, EXPLOSIVE DEVICE,EXPLOSIVE DEVICES,EXPLOSIVE-DEVICE,EXPLOSIVE-DEVICES, " \
+                    "DYNAMITE CHARGE, TRUCK-BOMB, PROJECTILE, TNT, RDX, TRUCK BOMB, FIRE,PLASTIC BOMB, PLASTIC-BOMB,TNT, GUNPOWDER, GUN-POWDER"
 
     '''
     #article = nltk.pos_tag(word_tokenize(article))
@@ -188,21 +194,18 @@ def getWeapon(article):
                             weaponsContained.append(adjNouns)
             except BaseException as e:
                 continue
-
     '''
     weaponsContained = []
-    article = article.split()    
-    for word in article:
-        for weapon in listOfWeapons.split(','):
-            if weapon in word:
-                if word not in weaponsContained:
-                    weaponsContained.append(weapon)
+    for weapon in listOfWeapons.split(','):
+        if weapon.strip() in article:
+            if weapon not in weaponsContained:
+                weaponsContained.append(weapon)
 
 
     return weaponsContained
 
 def getOrganization(article):
-    organizations = ['MORAZANIST PATRIOTIC FRONT', ' CEA', 'FORCES OF THE CRISTIANI ADMINISTRATION', '[DIGNITY] BATTALIONS', 'SALVADORAN POLICE', '1ST INFANTRY BRIGADE', ' WORK', 'TUPAC AMARU REVOLUTIONARY MOVEMENT', 'ELN', 'DRUG MAFIA', ' AND FREEDOM MOVEMENT', 'MEDELLIN CARTEL', 'PCCH', 'NATIONAL LIBERATION ARMY', 'SALVADORAN ARMY', 'BASQUE FATHERLAND AND LIBERTY [ETA] SEPARATIST ORGANIZATION', 'SENDERO LUMINOSO', 'THE COLOMBIAN INTELLIGENCE SERVICES', 'CUERPO ESPECIAL ARMADO', 'FMLN', 'MILITARY OFFICERS', 'FPMR', 'MRTA', 'GENERAL STAFF', 'MAOIST POPULAR LIBERATION ARMY', 'ARMED FORCES DEATH SQUADS', 'FARABUNDO MARTI NATIONAL LIBERATION FRONT (FMLN)', 'EXTRADITABLES', 'AIR FORCE', 'CEA', 'NATIONAL POLICE', 'COMMUNIST PARTY OF CHILE', 'DRUG TRAFFICKING ORGANIZATION', 'DEATH SQUAD', 'BREAD', 'THE MILITARY FASCIST DICTATORSHIP', 'SALVADORAN GUERRILLAS', 'ATLACATL BATTALION', 'UMOPAR', 'ASSASSINATION GROUP', '19-APRIL MOVEMENT', 'THE OWLS', 'SALVADORAN ARMED FORCES', "THE MEDELLIN CARTEL'S ARMED WING", 'MILITARY', 'SALVADORAN GOVERNMENT', 'RIGHTWING', 'OWLS', 'SALVADORAN TOP MILITARY COMMAND', 'CRISTIANI GOVERNMENT', 'SALVADORAN ARMY MILITARY SCHOOL','MEDELLIN', 'THE ELITE FORCE', 'EIGHT MILITARY OFFICERS', 'COMMUNIST PARTY', 'SALVADORAN AIR FORCE', 'PRO-CASTROITE ARMY OF NATIONAL LIBERATION', 'COLOMBIAN POLICE', 'EXTREME RIGHT-WING ASSASSINATION GROUP', 'THE EXTRADITABLES', 'NATIONAL PARTY', 'DRUG TRAFFICKING GANGS', "PEOPLE'S REVOLUTIONARY ARMY", 'SPECIAL ARMED CORPS', 'THE SALVADORAN AIR FORCE', 'COLOMBIAN GUERRILLA GROUP', "ARMED FORCES' GENERAL STAFF", 'TUPAC AMARY REVOLUTIONARY MOVEMENT', 'SHINING PATH', 'FPM', 'FARABUNDO MARTI NATIONAL LIBERATION FRONT [FMLN]', 'ARMED FORCES', 'THE COLOMBIAN SECURITY SERVICES', 'FMLN ', 'ULTRALEFTIST GROUPS', 'LOS EXTRADITABLES', 'U.S. CIA', 'THE COMMUNIST PARTY OF CHILE', 'FARABUNDO MARTI NATIONAL LIBERATION FRONT', 'ELN [ARMY OF NATIONAL LIBERATION]', 'MANUEL RODRIGUEZ PATRIOTIC FRONT', '6TH MILITARY DETACHMENT', 'THE MEDELLIN CARTEL', ' LAND', 'SALVADORAN REGIME', "CRISTIANI'S GOVERNMENT", 'FARC 12TH FRONT', 'ARMY OF NATIONAL LIBERATION', 'THE NATIONAL LIBERATION ARMY', 'COCAINE CARTELS', 'SPECIAL ARMED CORPS [CUERPO ESPECIAL ARMADO]', 'GOVERNMENT AND ARMY SECTORS', 'THE GUERRILLA ARMY OF NATIONAL LIBERATION', 'BASQUE FATHERLAND LIBERTY [ETA]', 'THE FMLN [FARABUNDO MARTI NATIONAL LIBERATION MOVEMENT]', 'THE ARMY OF NATIONAL LIBERATION', 'FAR RIGHTWING']
+    organizations = ['MORAZANIST PATRIOTIC FRONT', ' CEA', 'FORCES OF THE CRISTIANI ADMINISTRATION', '[DIGNITY] BATTALIONS', 'SALVADORAN POLICE', '1ST INFANTRY BRIGADE', 'TUPAC AMARU REVOLUTIONARY MOVEMENT', 'ELN', 'DRUG MAFIA', 'BREAD, LAND, WORK, AND FREEDOM MOVEMENT', 'MEDELLIN CARTEL', 'PCCH', 'NATIONAL LIBERATION ARMY', 'SALVADORAN ARMY', 'BASQUE FATHERLAND AND LIBERTY [ETA] SEPARATIST ORGANIZATION', 'SENDERO LUMINOSO', 'THE COLOMBIAN INTELLIGENCE SERVICES', 'CUERPO ESPECIAL ARMADO', 'FMLN', 'MILITARY OFFICERS', 'FPMR', 'MRTA', 'GENERAL STAFF', 'MAOIST POPULAR LIBERATION ARMY', 'ARMED FORCES DEATH SQUADS', 'FARABUNDO MARTI NATIONAL LIBERATION FRONT (FMLN)', 'EXTRADITABLES', 'AIR FORCE', 'CEA', 'NATIONAL POLICE', 'COMMUNIST PARTY OF CHILE', 'DRUG TRAFFICKING ORGANIZATION', 'DEATH SQUAD', 'BREAD', 'THE MILITARY FASCIST DICTATORSHIP', 'SALVADORAN GUERRILLAS', 'ATLACATL BATTALION', 'UMOPAR', 'ASSASSINATION GROUP', '19-APRIL MOVEMENT', 'THE OWLS', 'SALVADORAN ARMED FORCES', "THE MEDELLIN CARTEL'S ARMED WING", 'MILITARY', 'SALVADORAN GOVERNMENT', 'RIGHTWING', 'OWLS', 'SALVADORAN TOP MILITARY COMMAND', 'CRISTIANI GOVERNMENT', 'SALVADORAN ARMY MILITARY SCHOOL','MEDELLIN', 'THE ELITE FORCE', 'EIGHT MILITARY OFFICERS', 'COMMUNIST PARTY', 'SALVADORAN AIR FORCE', 'PRO-CASTROITE ARMY OF NATIONAL LIBERATION', 'COLOMBIAN POLICE', 'EXTREME RIGHT-WING ASSASSINATION GROUP', 'THE EXTRADITABLES', 'NATIONAL PARTY', 'DRUG TRAFFICKING GANGS', "PEOPLE'S REVOLUTIONARY ARMY", 'SPECIAL ARMED CORPS', 'THE SALVADORAN AIR FORCE', 'COLOMBIAN GUERRILLA GROUP', "ARMED FORCES' GENERAL STAFF", 'TUPAC AMARY REVOLUTIONARY MOVEMENT', 'SHINING PATH', 'FPM', 'FARABUNDO MARTI NATIONAL LIBERATION FRONT [FMLN]', 'ARMED FORCES', 'THE COLOMBIAN SECURITY SERVICES', 'FMLN ', 'ULTRALEFTIST GROUPS', 'LOS EXTRADITABLES', 'U.S. CIA', 'THE COMMUNIST PARTY OF CHILE', 'FARABUNDO MARTI NATIONAL LIBERATION FRONT', 'ELN [ARMY OF NATIONAL LIBERATION]', 'MANUEL RODRIGUEZ PATRIOTIC FRONT', '6TH MILITARY DETACHMENT', 'THE MEDELLIN CARTEL', 'SALVADORAN REGIME', "CRISTIANI'S GOVERNMENT", 'FARC 12TH FRONT', 'ARMY OF NATIONAL LIBERATION', 'THE NATIONAL LIBERATION ARMY', 'COCAINE CARTELS', 'SPECIAL ARMED CORPS [CUERPO ESPECIAL ARMADO]', 'GOVERNMENT AND ARMY SECTORS', 'THE GUERRILLA ARMY OF NATIONAL LIBERATION', 'BASQUE FATHERLAND LIBERTY [ETA]', 'THE FMLN [FARABUNDO MARTI NATIONAL LIBERATION MOVEMENT]', 'THE ARMY OF NATIONAL LIBERATION', 'FAR RIGHTWING']
     containedOrganizations = []
     for organization in organizations:
         if organization in article:
@@ -221,6 +224,7 @@ def getIncidentMachineLearning(mlClassifier,article):
 
 def getVictim(article):
     tokenized_text = word_tokenize(article)
+    st = StanfordNERTagger(stanford_classifier, stanford_ner_path, encoding='utf-8' )
     ner_text = st.tag(tokenized_text)
     listVictims = []
 
@@ -242,7 +246,8 @@ def getVictim(article):
                 listVictims.append(" ".join(victim))
     return listVictims
 
-for id in news_dictionary:
+for id in listOfIds:
+    #print(id, "\n")
     incident = getIncidentMachineLearning(mlClassfier,news_dictionary[id])
     weapon = getWeapon(news_dictionary[id])
 
@@ -260,9 +265,11 @@ for id in news_dictionary:
     else:
         for i, item in enumerate(weapon):
             if i != len(weapon) - 1:
-                outputFile.write(item.upper() + '\r                ')
+                outputFile.write(item.upper().strip() + '\r                ')
             else:
-                outputFile.write(item.upper())
+                outputFile.write(item.upper().strip())
+
+    outputFile.write("\rPERP INDIV:     -")
 
     outputFile.write("\rPERP ORG:       ")
     if len(organization) == 0:
@@ -270,13 +277,14 @@ for id in news_dictionary:
     else:
         for i, item in enumerate(organization):
             if i != len(organization) - 1:
-                outputFile.write(item.upper() + '\r                ')
+                outputFile.write(item.upper().strip() + '\r                ')
             else:
-                outputFile.write(item.upper())
+                outputFile.write(item.upper().strip())
 
+    outputFile.write("\rTARGET:         -")
     outputFile.write("\rVICTIM:         ")
     if len(listOfVictims)==0:
-        outputFile.write('-')
+        outputFile.write('-\n')
     else:
         for i, item in enumerate(listOfVictims):
             if i != len(listOfVictims) - 1:
