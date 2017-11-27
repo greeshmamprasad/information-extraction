@@ -13,6 +13,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn import svm
+from sklearn import linear_model
 import numpy as np
 from nltk.tag import StanfordNERTagger
 from nltk.tokenize import word_tokenize
@@ -24,12 +25,14 @@ incidentTags={'ARSON':0,'ATTACK':1,'BOMBING':2,'KIDNAPPING':3,'ROBBERY':4}
 
 # Change the path according to your system
 #stanford_classifier = 'C:\Python3.5\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
+stanford_classifier = 'C:\\Users\Mohanadas\AppData\Roaming\Python\stanford-ner-2017-06-09\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
 #stanford_ner_path = 'C:\Python3.5\stanford-ner-2017-06-09\stanford-ner.jar'
+stanford_ner_path = "C:\\Users\Mohanadas\AppData\Roaming\Python\stanford-ner-2017-06-09\stanford-ner-2017-06-09\stanford-ner.jar"
 
-stanford_classifier = os.environ.get('STANFORD_MODELS').split(':')[0]
+#stanford_classifier = os.environ.get('STANFORD_MODELS').split(':')[0]
 
 # For getting the path for StanfordNERTagger 
-stanford_ner_path = os.environ.get('CLASSPATH').split(':')[0]
+#stanford_ner_path = os.environ.get('CLASSPATH').split(':')[0]
 
 # Creating Tagger Object
 
@@ -125,7 +128,15 @@ def getClassifier():
 
     highestAccuracyClassifier = 0
     highestAccuracy = 0
-    text_clf = Pipeline([('vect', CountVectorizer()), ('tfidf', TfidfTransformer()), ('clf', svm.SVC(kernel='linear'))])
+    #text_clf = Pipeline([('vect', CountVectorizer()), ('tfidf', TfidfTransformer()), ('clf', svm.SVC(kernel='linear'))])
+    text_clf = Pipeline([('vect', CountVectorizer()),
+                         ('tfidf', TfidfTransformer()),
+                         ('clf', linear_model.SGDClassifier(alpha=0.0001, average=False, class_weight=None, epsilon=0.1,
+                  eta0=0.0, fit_intercept=True, l1_ratio=0.15,
+                  learning_rate='optimal', loss='hinge', max_iter=None, n_iter=None,
+                  n_jobs=1, penalty='l2', power_t=0.5, random_state=None,
+                  shuffle=True, tol=None, verbose=0, warm_start=False))])
+
     for part in split_news_list_train:
         trainArtSet = list(
             set(news_list_train) - set(part))  # gets everything left in the news set minus the test set a.k.a 'part'
