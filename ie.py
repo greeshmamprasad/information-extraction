@@ -235,7 +235,7 @@ def getIncidentMachineLearning(mlClassifier,article):
 
 def getVictim(article):
     tokenized_text = word_tokenize(article)
-    st = StanfordNERTagger(stanford_classifier, stanford_ner_path, encoding='utf-8' )
+    st = StanfordNERTagger(stanford_classifier, stanford_ner_path, encoding='utf-8')
     ner_text = st.tag(tokenized_text)
     listVictims = []
 
@@ -255,7 +255,7 @@ def getVictim(article):
             if (" ".join(victim) not in lname):
                 lname.append(" ".join(victim[1:]))
                 listVictims.append(" ".join(victim))
-    return listVictims
+    return set(listVictims)
 
 for id in listOfIds:
     #print(id, "\n")
