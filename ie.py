@@ -24,10 +24,10 @@ import os
 incidentTags={'ARSON':0,'ATTACK':1,'BOMBING':2,'KIDNAPPING':3,'ROBBERY':4}
 
 # Change the path according to your system
-#stanford_classifier = 'C:\Python3.5\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
-stanford_classifier = 'C:\\Users\Mohanadas\AppData\Roaming\Python\stanford-ner-2017-06-09\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
-#stanford_ner_path = 'C:\Python3.5\stanford-ner-2017-06-09\stanford-ner.jar'
-stanford_ner_path = "C:\\Users\Mohanadas\AppData\Roaming\Python\stanford-ner-2017-06-09\stanford-ner-2017-06-09\stanford-ner.jar"
+stanford_classifier = 'C:\Python3.5\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
+#stanford_classifier = 'C:\\Users\Mohanadas\AppData\Roaming\Python\stanford-ner-2017-06-09\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
+stanford_ner_path = 'C:\Python3.5\stanford-ner-2017-06-09\stanford-ner.jar'
+#stanford_ner_path = "C:\\Users\Mohanadas\AppData\Roaming\Python\stanford-ner-2017-06-09\stanford-ner-2017-06-09\stanford-ner.jar"
 
 #stanford_classifier = os.environ.get('STANFORD_MODELS').split(':')[0]
 
@@ -238,24 +238,29 @@ def getVictim(article):
     st = StanfordNERTagger(stanford_classifier, stanford_ner_path, encoding='utf-8')
     ner_text = st.tag(tokenized_text)
     listVictims = []
+    priList = ['JESUIT PRIESTS','PRIESTS','JESUIT','JESUITS']
+    listOfVictims = [e for e in priList if e in article]
 
-    temp = 0
-    lname = []
-    for i, obj in enumerate(ner_text):
-        if (i < temp):
-            continue
+    if(listOfVictims.__len__()!=0):
+        return listOfVictims[0]
+    else:
+        temp = 0
+        lname = []
+        for i, obj in enumerate(ner_text):
+            if (i < temp):
+                continue
 
-        victim = []
-        temp = i
-        while (ner_text[temp][1] == 'PERSON'):
-            victim.append(ner_text[temp][0])
-            temp += 1
+            victim = []
+            temp = i
+            while (ner_text[temp][1] == 'PERSON'):
+                victim.append(ner_text[temp][0])
+                temp += 1
 
-        if (victim.__len__() != 0 and victim.__len__()>1):
-            if (" ".join(victim) not in lname):
-                lname.append(" ".join(victim[1:]))
-                listVictims.append(" ".join(victim))
-    return set(listVictims)
+            if (victim.__len__() != 0 and victim.__len__()>1):
+                if (" ".join(victim) not in lname):
+                    lname.append(" ".join(victim[1:]))
+                    listVictims.append(" ".join(victim))
+        return set(listVictims)
 
 for id in listOfIds:
     #print(id, "\n")
