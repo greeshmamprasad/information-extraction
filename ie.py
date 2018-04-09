@@ -25,17 +25,16 @@ incidentTags={'ARSON':0,'ATTACK':1,'BOMBING':2,'KIDNAPPING':3,'ROBBERY':4}
 
 # Change the path according to your system
 #stanford_classifier = 'C:\Python3.5\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
-stanford_classifier = 'C:\\Users\Mohanadas\AppData\Roaming\Python\stanford-ner-2017-06-09\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
+#stanford_classifier = 'C:\\Users\Mohanadas\AppData\Roaming\Python\stanford-ner-2017-06-09\stanford-ner-2017-06-09\classifiers\english.all.3class.distsim.crf.ser.gz'
 #stanford_ner_path = 'C:\Python3.5\stanford-ner-2017-06-09\stanford-ner.jar'
-stanford_ner_path = "C:\\Users\Mohanadas\AppData\Roaming\Python\stanford-ner-2017-06-09\stanford-ner-2017-06-09\stanford-ner.jar"
+#stanford_ner_path = "C:\\Users\Mohanadas\AppData\Roaming\Python\stanford-ner-2017-06-09\stanford-ner-2017-06-09\stanford-ner.jar"
 
-#stanford_classifier = os.environ.get('STANFORD_MODELS').split(':')[0]
+#linux
+stanford_classifier = os.environ.get('STANFORD_MODELS').split(':')[0]
+# For getting the path for StanfordNERTagger
 
-# For getting the path for StanfordNERTagger 
-#stanford_ner_path = os.environ.get('CLASSPATH').split(':')[0]
-
+stanford_ner_path = os.environ.get('CLASSPATH').split(':')[0]
 # Creating Tagger Object
-
 
 #print ('Hi! This is an information extractor. Please enter your file like:\n')
 #cmdLineArgs = input('infoextract input.txt\n')
@@ -111,11 +110,6 @@ def getClassifier():
             sys.exit()
 
 
-
-
-
-
-
     # splitting process for classifier
     split_news_list_train = np.array_split(list(news_list_train), 5)
     '''The above will contain dtype attributes like this:-
@@ -148,6 +142,7 @@ def getClassifier():
             highestAccuracy = np.mean(predicted == [news_list_train[x] for x in testArtSet])
             highestAccuracyClassifier = text_clf
     return highestAccuracyClassifier
+
 
 def getWeapon(article):
     weapons = {}
@@ -182,7 +177,9 @@ def getWeapon(article):
     weapons["BULLET"] = ["BULLET ", "BULLETS"]
 
     weapons["AK-47"] = ["AK-47S", "AK-47"]
+
     weapons["MORTAR"] = ["MORTAR", "MORTARS"]
+
     weapons["ROCKET"] = ["ROCKET", "ROCKETS"]
 
     weapons["RIFLE"] = ["AK RIFLES", "RIFLE", "RIFLES", "AK-47 RIFLE", "AK-47 RIFLES", "ASSAULT RIFLE", "ASSAULT-RIFLE"]
@@ -214,7 +211,6 @@ def getWeapon(article):
                 "TERRORIST, TERRORIST BOMB, TERRORIST BOMBS, TERRORIST-BOMB,TERRORIST-BOMBS, MINE, ROCKET, HOMEMADE BOMB, HOME-MADE BOMB,STONES, BUSBOMB, VEHICLE LOADED WITH EXPLOSIVES," \
                 "BUSBOMBS, BUS-BOMB, STONE, BUS BOMB, INCENDIARY BOMB, MINES, EXPLOSIVE DEVICE,EXPLOSIVE DEVICES,EXPLOSIVE-DEVICE,EXPLOSIVE-DEVICES, " \
                 "DYNAMITE CHARGE, TRUCK-BOMB, PROJECTILE, TNT, RDX, TRUCK BOMB, FIRE,PLASTIC BOMB, PLASTIC-BOMB,TNT, GUNPOWDER, GUN-POWDER"
-
 
     #article = nltk.pos_tag(word_tokenize(article))
     article = CoreNLPPOSTagger(url='http://localhost:9000').tag(word_tokenize(article))
@@ -263,9 +259,8 @@ def getWeapon(article):
                 weaponsContained.append(weapon.strip())
                 if category != 'MISC':
                     break
-
-
     return weaponsContained
+
 
 def getOrganization(article):
     organizations={}
@@ -309,6 +304,7 @@ def getIncidentMachineLearning(mlClassifier,article):
     docs_test.append(article)
     predicted = mlClassifier.predict(docs_test)
     return list(incidentTags.keys())[list(incidentTags.values()).index(predicted)]
+
 
 def getVictim(article):
     tokenized_text = word_tokenize(article)
@@ -388,8 +384,6 @@ for id in listOfIds:
                 outputFile.write(item.upper()+"\n")
             else:
                 outputFile.write("                "+item.upper()+"\n")
-
-
 
     outputFile.write("\n")
 
