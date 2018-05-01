@@ -36,6 +36,13 @@ stanford_classifier = os.environ.get('STANFORD_MODELS').split(':')[0]
 stanford_ner_path = os.environ.get('CLASSPATH').split(':')[0]
 # Creating Tagger Object
 
+<<<<<<< HEAD
+=======
+#print ('Hi! This is an information extractor. Please enter your file like:\n')
+#cmdLineArgs = input('infoextract input.txt\n')
+#cmdLineArgs = cmdLineArgs.split()
+
+>>>>>>> c40d04e098932c28b89c2cd4f4e29df15b56ee53
 try:
     with open(sys.argv[1], 'r') as file:
         fileContent = file.read().strip()
@@ -196,6 +203,64 @@ def getWeapon(article):
 
     weapons["GUNPOWDER"] = ["GUNPOWDER", "GUN-POWDER"]
 
+<<<<<<< HEAD
+=======
+    '''listOfWeapons = "MACHINE-GUN, MACHINE-GUNS, MACHINEGUN,  MACHINEGUNS, GRENADES, GRENADE, " \
+                "HANDGRENADE,HANDGRENADES, HAND-GRENADE, HAND-GRENADES, BULLET , BULLETS, " \
+                "AK-47S, AK-47, A BOMB, THE BOMB, BOMB, BOMBS,MORTAR,MORTARS, ROCKET, ROCKETS, SUB-MACHINE-GUN, " \
+                "SUB-MACHINE-GUNS, SUB-MACHINEGUN, SUB-MACHINEGUNS, SUBMACHINEGUN, SUBMACHINEGUNS,SUBMACHINE-GUN, SUBMACHINE-GUNS " \
+                "AK RIFLES, RIFLE, RIFLES, AK-47 RIFLE, AK-47 RIFLES, STONES, MORTAR, MORTARS, " \
+                "GUN , GUNS, MACHINEGUN MACHINEGUNS, SUBMACHINE GUN, SUBMACHINE GUNS, SUB MACHINE GUN, " \
+                "SUB MACHINE GUNS, HAND GRENADE, HAND-GRENADE, HAND-GRENADES,HAND GRENADES," \
+                "AERIAL BOMB ,ARTILLERY, PISTOLS, PISTOL,HANDGUN, HANDGUNS, HAND GUN, HAND GUNS, " \
+                "HAND-GUN, HAND-GUNS, AIR GUN, AIRGUN, AIR-GUN, AIR GUNS, AIRGUNS, AIR-GUNS, " \
+                "REVOLVER, REVOLVERS, BLOWGUN, BLOWGUNS, ASSAULT RIFLE, ASSAULT-RIFLE, FIREARM, " \
+                "FIRE-ARM, FIRE ARM, TANK, TANKER,DYNAMITE,DYNAMITE-ATTACK, DYNAMITE-ATTACKS,DYNAMITE ATTACK, DYNAMITE ATTACKS, DYNAMITE STICK, DYNAMITE STICKS, DYNAMITE-STICK, DYNAMITE-STICKS, DYNAMITES, BOMB, BOMBS, EXPLOSIVE, " \
+                " ROCKET,ROCKETS, GRENADE, CARBOMB, CAR BOMB, CAR-BOMB, GRENADES, EXPLOSIVES, " \
+                "TERRORIST, TERRORIST BOMB, TERRORIST BOMBS, TERRORIST-BOMB,TERRORIST-BOMBS, MINE, ROCKET, HOMEMADE BOMB, HOME-MADE BOMB,STONES, BUSBOMB, VEHICLE LOADED WITH EXPLOSIVES," \
+                "BUSBOMBS, BUS-BOMB, STONE, BUS BOMB, INCENDIARY BOMB, MINES, EXPLOSIVE DEVICE,EXPLOSIVE DEVICES,EXPLOSIVE-DEVICE,EXPLOSIVE-DEVICES, " \
+                "DYNAMITE CHARGE, TRUCK-BOMB, PROJECTILE, TNT, RDX, TRUCK BOMB, FIRE,PLASTIC BOMB, PLASTIC-BOMB,TNT, GUNPOWDER, GUN-POWDER"
+
+    #article = nltk.pos_tag(word_tokenize(article))
+    article = CoreNLPPOSTagger(url='http://localhost:9000').tag(word_tokenize(article))
+    article = [w for w in article if not w in stopwords.words('english')]
+    weaponsContained = []
+    for i,taggedWord in enumerate(article):
+        if taggedWord[1].startswith('N'):
+            try:
+                word = taggedWord[0]
+                for weapon in listOfWeapons.split(','):
+                    if weapon.strip() in word:
+                        #now, to get the full weapon, we need all the nouns immediately preceeding it and the adjectives preceeding the noun and the nouns suceeding the word
+                        adjNouns = []
+                        j=i-1
+                        while article[j][1].startswith('N'):
+                            adjNouns.append(article[j][0])
+                            j-=1
+                        while article[j][1].startswith('J'):
+                            adjNouns.append(article[j][0])
+                            j -= 1
+                        #numbers as well like 4 huge guns
+                        while article[j][1] == 'CD':
+                            adjNouns.append(article[j][0])
+                            j -= 1
+                        while article[j][1] == 'DT':
+                            adjNouns.append(article[j][0])
+                            j -= 1
+                        adjNouns =  " ".join(reversed(adjNouns)).split()
+                        adjNouns.append(word)
+                        #Find noun phrases that follow the weapon as well
+                        j=i+1
+                        while article[j][1].startswith('N'):
+                            adjNouns.append(article[j][0])
+                            j+=1
+                        adjNouns = ' '.join(adjNouns)
+                        if adjNouns not in weaponsContained:
+                            weaponsContained.append(adjNouns)
+            except BaseException as e:
+                continue
+    '''
+>>>>>>> c40d04e098932c28b89c2cd4f4e29df15b56ee53
     weaponsContained = []
     categories=list(weapons.keys())
     for category in categories:
